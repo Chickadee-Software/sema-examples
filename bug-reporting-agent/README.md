@@ -26,6 +26,22 @@ Screenshot + Email
 4. **Install deps**: `pip install -r requirements.txt`
 5. **Run**: `python app.py`
 
+### Webhook URL: Local vs Cloud
+
+This app listens on `http://localhost:5050/webhook`.
+
+| Your Setup | Webhook URL |
+|------------|-------------|
+| Sema running locally | `http://localhost:5050/webhook` (direct) |
+| Sema cloud (api.withsema.com) | Use [ngrok](https://ngrok.com) or similar |
+
+**For cloud Sema**, expose your local app first:
+
+```bash
+ngrok http 5050
+# Use the https://xxx.ngrok.io/webhook URL in your inbox settings
+```
+
 ## Send a Bug Report
 
 Email `report-bugs@dev-in.withsema.com` with:
