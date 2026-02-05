@@ -1,0 +1,7 @@
+flask>=3.0.0
+sema-sdk>=0.1.0
+openai>=1.0.0
+resend>=2.0.0
+httpx>=0.25.0
+python-dotenv>=1.0.0
+html2text>=2024.2.26
