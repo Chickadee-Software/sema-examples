@@ -27,6 +27,7 @@ openai_client = OpenAI()
 # Resend
 resend.api_key = os.environ["RESEND_API_KEY"]
 RESEND_FROM_EMAIL = os.environ["RESEND_FROM_EMAIL"]
+RESEND_REPLY_TO = os.environ.get("RESEND_REPLY_TO", "docs-qa@in.withsema.com")
 
 # Docs context: fetch at startup, cache in memory
 DOCS_CONTEXT_URL = os.environ.get(
@@ -114,14 +115,14 @@ def handle_webhook():
     body_html_email = f"<pre style='white-space: pre-wrap; font-family: sans-serif;'>{escaped}</pre>"
 
     try:
-        resend.Emails.send(
-            {
-                "from": RESEND_FROM_EMAIL,
-                "to": [sender_addr],
-                "subject": f"Re: {subject}",
-                "html": body_html_email,
-            }
-        )
+        send_params: dict = {
+            "from": RESEND_FROM_EMAIL,
+            "to": [sender_addr],
+            "subject": f"Re: {subject}",
+            "html": body_html_email,
+            "reply_to": RESEND_REPLY_TO,
+        }
+        resend.Emails.send(send_params)
     except Exception as e:
         print(f"Resend error: {e}")
         return {"error": "Failed to send reply"}, 500
