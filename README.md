@@ -7,6 +7,7 @@ Example applications built with [Sema](https://withsema.com) — universal inges
 | Example | Description | Stack |
 |---------|-------------|-------|
 | [bug-reporting-agent](./bug-reporting-agent) | Email bug reports → Linear issues | Python, Flask |
+| [docs-qa-agent](./docs-qa-agent) | Email a question → Get an answer from Sema docs | Python, Flask, OpenAI, Resend |
 
 ## What is Sema?
 
