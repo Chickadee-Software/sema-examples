@@ -18,6 +18,8 @@ load_dotenv()
 
 app = Flask(__name__)
 
+DEV_MODE = os.environ.get("DEV_MODE", "").lower() == "true"
+
 # Sema webhook verification
 verifier = WebhookVerifier(secret=os.environ["SEMA_WEBHOOK_SECRET"])
 
@@ -60,6 +62,44 @@ def get_docs_context() -> str:
     return _DOCS_CONTEXT
 
 
+def answer_question(question: str) -> str:
+    """Send a question to OpenAI with docs context and return the answer."""
+    docs = get_docs_context()
+    system_prompt = (
+        "You answer questions about Sema using only this documentation. "
+        "Keep your answers brief, concise, focused, & precise. "
+        "If unsure or the answer isn't in the docs, say so.\n\n"
+        f"{docs}"
+    )
+    completion = openai_client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": question},
+        ],
+    )
+    return completion.choices[0].message.content or ""
+
+
+@app.route("/ask", methods=["GET"])
+def ask():
+    """Dev-only endpoint: answer a question directly without email. Requires DEV_MODE=true."""
+    if not DEV_MODE:
+        return {"error": "Not found"}, 404
+
+    question = request.args.get("q", "").strip()
+    if not question:
+        return {"error": "Missing query parameter: q"}, 400
+
+    try:
+        answer = answer_question(question)
+    except Exception as e:
+        print(f"OpenAI error: {e}")
+        return {"error": "Failed to get answer"}, 500
+
+    return answer, 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
 @app.route("/webhook", methods=["POST"])
 def handle_webhook():
     """Receive Sema webhook, answer question from docs, reply via email."""
@@ -89,28 +129,12 @@ def handle_webhook():
         print("Empty question")
         return {"error": "Empty question"}, 400
 
-    docs = get_docs_context()
-    system_prompt = (
-        "You answer questions about Sema using only this documentation. "
-        "If unsure or the answer isn't in the docs, say so.\n\n"
-        f"{docs}"
-    )
-    user_message = question
-
     try:
-        completion = openai_client.chat.completions.create(
-            model="gpt-5-nano",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ],
-        )
-        answer = completion.choices[0].message.content or ""
+        answer = answer_question(question)
     except Exception as e:
         print(f"OpenAI error: {e}")
         return {"error": "Failed to get answer"}, 500
 
-    # Simple HTML body: escape and preserve newlines
     escaped = html.escape(answer)
     body_html_email = f"<pre style='white-space: pre-wrap; font-family: sans-serif;'>{escaped}</pre>"
 

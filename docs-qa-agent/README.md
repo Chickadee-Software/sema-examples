@@ -23,8 +23,8 @@ Email question to docs inbox
 1. **Get a Sema inbox** with `email_enabled=True` and webhook URL pointing to this app
 2. **Verify outbound domain** in Resend (`out.withsema.com` per [domains.md](../../sema/docs/infra/domains.md))
 3. **Copy `.env.example` to `.env`** and fill in your values
-4. **Install deps**: `pip install -r requirements.txt`
-5. **Run**: `python app.py`
+4. **Install deps**: `make install`
+5. **Run**: `make run`
 
 ### Webhook URL: Local vs Cloud
 
@@ -46,8 +46,18 @@ ngrok http 5050
 
 To use local docs instead of deployed:
 
-1. Run `make docs-serve` in the sema repo
+1. Run `mkdocs serve` in the sema repo (requires the `mkdocs-llm-context` plugin)
 2. Set `DOCS_CONTEXT_URL=http://127.0.0.1:8000/llm-context.json` in `.env`
+
+### Dev Mode: Query Without Email
+
+Set `DEV_MODE=true` in `.env` to enable the `/ask` endpoint for local testing — no email required:
+
+```bash
+curl "http://localhost:5050/ask?q=How+do+I+set+up+an+inbox"
+```
+
+Returns the LLM answer as plain text. Never enable this in production.
 
 ## Ask a Question
 
@@ -64,3 +74,5 @@ You'll receive a reply from `docs-qa@out.withsema.com` (or your configured `RESE
 | `app.py` | Flask webhook receiver, OpenAI + Resend integration |
 | `.env.example` | Required environment variables |
 | `requirements.txt` | Python dependencies |
+| `Makefile` | `make install` / `make test` / `make run` |
+| `tests/` | Pytest test suite |
