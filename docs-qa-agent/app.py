@@ -2,6 +2,7 @@
 
 import html
 import os
+import threading
 
 import html2text
 import httpx
@@ -68,6 +69,10 @@ def answer_question(question: str) -> str:
     system_prompt = (
         "You answer questions about Sema using only this documentation. "
         "Keep your answers brief, concise, focused, & precise. "
+        "This reply will be sent as an email, so use plain text formatting only. "
+        "Do NOT use markdown. For links, write the full URL inline (e.g., 'See: https://docs.withsema.com/api/webhooks/'). "
+        "Use the full URL provided in each doc section, not relative paths. "
+        "Include a source reference link to help the user. "
         "If unsure or the answer isn't in the docs, say so.\n\n"
         f"{docs}"
     )
@@ -100,6 +105,31 @@ def ask():
     return answer, 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
+def process_and_reply(sender_addr: str, subject: str, question: str):
+    """Background task: get answer from OpenAI and send reply via Resend."""
+    try:
+        answer = answer_question(question)
+    except Exception as e:
+        print(f"OpenAI error: {e}")
+        return
+
+    escaped = html.escape(answer)
+    body_html_email = f"<pre style='white-space: pre-wrap; font-family: sans-serif;'>{escaped}</pre>"
+
+    try:
+        send_params: dict = {
+            "from": RESEND_FROM_EMAIL,
+            "to": [sender_addr],
+            "subject": f"Re: {subject}",
+            "html": body_html_email,
+            "reply_to": RESEND_REPLY_TO,
+        }
+        resend.Emails.send(send_params)
+        print(f"Replied to {sender_addr}")
+    except Exception as e:
+        print(f"Resend error: {e}")
+
+
 @app.route("/webhook", methods=["POST"])
 def handle_webhook():
     """Receive Sema webhook, answer question from docs, reply via email."""
@@ -129,29 +159,13 @@ def handle_webhook():
         print("Empty question")
         return {"error": "Empty question"}, 400
 
-    try:
-        answer = answer_question(question)
-    except Exception as e:
-        print(f"OpenAI error: {e}")
-        return {"error": "Failed to get answer"}, 500
+    # Process in background to respond immediately and avoid webhook retries
+    thread = threading.Thread(
+        target=process_and_reply,
+        args=(sender_addr, subject, question),
+    )
+    thread.start()
 
-    escaped = html.escape(answer)
-    body_html_email = f"<pre style='white-space: pre-wrap; font-family: sans-serif;'>{escaped}</pre>"
-
-    try:
-        send_params: dict = {
-            "from": RESEND_FROM_EMAIL,
-            "to": [sender_addr],
-            "subject": f"Re: {subject}",
-            "html": body_html_email,
-            "reply_to": RESEND_REPLY_TO,
-        }
-        resend.Emails.send(send_params)
-    except Exception as e:
-        print(f"Resend error: {e}")
-        return {"error": "Failed to send reply"}, 500
-
-    print(f"Replied to {sender_addr}")
     return {"ok": True}, 200
 
 
