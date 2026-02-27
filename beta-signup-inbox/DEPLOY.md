@@ -57,6 +57,6 @@ aws apprunner start-deployment --service-arn <SERVICE_ARN>
 ## 5. Post-Deploy
 
 1. Update the Sema inbox webhook URL to `https://<SERVICE_URL>/webhook`
-2. Update `SIGNUP_URL` in `signup-dialog.tsx` to `https://<SERVICE_URL>/signup`
+2. Point your frontend signup form to `https://<SERVICE_URL>/signup`
 
 Store your `SERVICE_ARN`, `SERVICE_ID`, and `SERVICE_URL` in `.env.deploy` (gitignored).
