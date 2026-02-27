@@ -86,6 +86,12 @@ def answer_question(question: str) -> str:
     return completion.choices[0].message.content or ""
 
 
+@app.route("/health", methods=["GET"])
+def health():
+    """Health check endpoint for load balancers and container orchestration."""
+    return {"status": "ok"}, 200
+
+
 @app.route("/ask", methods=["GET"])
 def ask():
     """Dev-only endpoint: answer a question directly without email. Requires DEV_MODE=true."""

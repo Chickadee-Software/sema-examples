@@ -64,6 +64,17 @@ def mock_openai_completion(answer: str = "Here is your answer."):
 
 
 # ---------------------------------------------------------------------------
+# /health endpoint
+# ---------------------------------------------------------------------------
+
+
+def test_health_returns_ok(client):
+    resp = client.get("/health")
+    assert resp.status_code == 200
+    assert resp.json == {"status": "ok"}
+
+
+# ---------------------------------------------------------------------------
 # load_docs_context
 # ---------------------------------------------------------------------------
 
@@ -194,7 +205,8 @@ def test_webhook_success(client):
     assert "Here is the answer." in send_args["html"]
 
 
-def test_webhook_returns_500_on_openai_error(client):
+def test_webhook_returns_200_even_on_openai_error(client):
+    """Webhook returns 200 immediately; OpenAI errors are logged but don't block response."""
     event = make_mock_event()
     with (
         patch.object(app_module.verifier, "verify", return_value=event),
@@ -207,11 +219,12 @@ def test_webhook_returns_500_on_openai_error(client):
     ):
         resp = client.post("/webhook", data=b"{}", content_type="application/json")
 
-    assert resp.status_code == 500
-    assert b"Failed to get answer" in resp.data
+    assert resp.status_code == 200
+    assert resp.json == {"ok": True}
 
 
-def test_webhook_returns_500_on_resend_error(client):
+def test_webhook_returns_200_even_on_resend_error(client):
+    """Webhook returns 200 immediately; Resend errors are logged but don't block response."""
     event = make_mock_event()
     with (
         patch.object(app_module.verifier, "verify", return_value=event),
@@ -225,5 +238,5 @@ def test_webhook_returns_500_on_resend_error(client):
     ):
         resp = client.post("/webhook", data=b"{}", content_type="application/json")
 
-    assert resp.status_code == 500
-    assert b"Failed to send reply" in resp.data
+    assert resp.status_code == 200
+    assert resp.json == {"ok": True}
