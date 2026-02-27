@@ -33,7 +33,7 @@ This app listens on `http://localhost:5050/webhook`.
 | Your Setup | Webhook URL |
 |------------|-------------|
 | Sema running locally | `http://localhost:5050/webhook` (direct) |
-| Sema cloud (api.withsema.com) | Use [ngrok](https://ngrok.com) or similar |
+| Sema cloud (dev-api.withsema.com) | Use [ngrok](https://ngrok.com) or similar |
 
 **For cloud Sema**, expose your local app first:
 
@@ -67,12 +67,18 @@ Email your inbox address (e.g. `docs-qa@dev-in.withsema.com`) with:
 
 You'll receive a reply from `docs-qa@out.withsema.com` (or your configured `RESEND_FROM_EMAIL`).
 
+## Deployment
+
+See [DEPLOY.md](DEPLOY.md) for AWS App Runner deployment instructions.
+
 ## Files
 
 | File | Purpose |
 |------|---------|
 | `app.py` | Flask webhook receiver, OpenAI + Resend integration |
+| `Dockerfile` | Container image for App Runner deployment |
 | `.env.example` | Required environment variables |
+| `.env.deploy` | Deployment values (gitignored) |
 | `requirements.txt` | Python dependencies |
 | `Makefile` | `make install` / `make test` / `make run` |
 | `tests/` | Pytest test suite |
