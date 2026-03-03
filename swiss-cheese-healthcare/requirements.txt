@@ -1,0 +1,6 @@
+flask>=3.0.0
+sema-sdk>=0.1.0
+agent-registry-router>=0.4.0
+openai>=1.0.0
+rich>=13.0.0
+python-dotenv>=1.0.0
