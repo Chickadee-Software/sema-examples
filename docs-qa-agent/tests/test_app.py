@@ -203,6 +203,7 @@ def test_webhook_success(client):
     assert send_args["to"] == ["user@example.com"]
     assert send_args["subject"] == "Re: How do I set up an inbox?"
     assert "Here is the answer." in send_args["html"]
+    assert send_args["text"] == "Here is the answer."
 
 
 def test_webhook_returns_200_even_on_openai_error(client):

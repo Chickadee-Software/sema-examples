@@ -128,6 +128,7 @@ def process_and_reply(sender_addr: str, subject: str, question: str):
             "to": [sender_addr],
             "subject": f"Re: {subject}",
             "html": body_html_email,
+            "text": answer,
             "reply_to": RESEND_REPLY_TO,
         }
         resend.Emails.send(send_params)

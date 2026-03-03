@@ -22,9 +22,10 @@ Email question to docs inbox
 
 1. **Get a Sema inbox** with `email_enabled=True` and webhook URL pointing to this app
 2. **Verify outbound domain** in Resend (`out.withsema.com` per [domains.md](../../sema/docs/infra/domains.md))
-3. **Copy `.env.example` to `.env`** and fill in your values
-4. **Install deps**: `make install`
-5. **Run**: `make run`
+3. **Set `RESEND_REPLY_TO`** to match your inbox so replies go to the right place: `docs-qa@dev-in.withsema.com` for dev, `docs-qa@in.withsema.com` for prod (see `.env.example`).
+4. **Copy `.env.example` to `.env`** and fill in your values
+5. **Install deps**: `make install`
+6. **Run**: `make run`
 
 ### Webhook URL: Local vs Cloud
 
